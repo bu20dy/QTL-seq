@@ -1,11 +1,11 @@
 # QTL-seq User Guide
-#### version 2.2.9
+#### This is an edited version of QTL-seq published by Sugihara et al 2022. Please visit their [Github](https://github.com/YuSugihara/QTL-seq/) for the official release and more help.
+The purpose of my version is to allow for QTL-seq to be used with self-crosses. The original QTL-seq pipeline performs a filtering step that removes all SNPs where the provided parent is heterozygous, because the assumption is you are working with two fully fixed homozygous parents. It also re-assigns SNP genotype calls to be in reference to the parent (for example: if bulk 1 shares the same genotype as the parent, bulk 1 will be 0/0 at that site). The following README will largely be a copy and paste of Sugihara's Github page for QTL-seq, but if and where I add edits, they will be in $\color{rgba(255,0,0, 0.4)}{\textsf{green}$. Thanks!
 
 ## Table of contents
 - [What is QTL-seq?](#what-is-qtl-seq)
 - [Installation](#installation)
   + [Dependencies](#dependencies)
-  + [Installation via bioconda](#installation-via-bioconda)
   + [Manual installation](#manual-installation)
 - [Usage](#usage)
   + [Example 1 : run QTL-seq from FASTQ without trimming](#example-1--run-qtl-seq-from-fastq-without-trimming)
