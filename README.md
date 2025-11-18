@@ -1,6 +1,6 @@
 # QTL-seq User Guide
 #### This is an edited version of QTL-seq published by Sugihara et al 2022. Please visit their [Github](https://github.com/YuSugihara/QTL-seq/) for the official release and more help.
-The purpose of my version is to allow for QTL-seq to be used with self-crosses. The original QTL-seq pipeline performs a filtering step that removes all SNPs where the provided parent is heterozygous, because the assumption is you are working with two fully fixed homozygous parents. It also re-assigns SNP genotype calls to be in reference to the parent (for example: if bulk 1 shares the same genotype as the parent, bulk 1 will be 0/0 at that site). The following README will largely be a copy and paste of Sugihara's Github page for QTL-seq, but if and where I add edits, they will be in $\color{rgba(255,0,0, 0.4)}{\textsf{green}$. Thanks!
+The purpose of my version is to allow for QTL-seq to be used with self-crosses. The original QTL-seq pipeline performs a filtering step that removes all SNPs where the provided parent is heterozygous, because the assumption is you are working with two fully fixed homozygous parents. It also re-assigns SNP genotype calls to be in reference to the parent (for example: if bulk 1 shares the same genotype as the parent, bulk 1 will be 0/0 at that site). What I have added is a parameter "--parental_SNPfilter" to both qtlseq and qtlplot to specify if you want the default filtering process ("homo") or to filter for heterozygous sites ("hetero"). The following README will largely be a copy and paste of Sugihara's Github page for QTL-seq, but if and where I add edits, they will be in **bold**.
 
 ## Table of contents
 - [What is QTL-seq?](#what-is-qtl-seq)
@@ -24,9 +24,8 @@ The purpose of my version is to allow for QTL-seq to be used with self-crosses. 
   + [About multiple testing correction](#about-multiple-testing-correction)
 
 ## What is QTL-seq?
-<img src="https://github.com/YuSugihara/QTL-seq/blob/master/images/1_logo.png" width=200>
 
-Bulked segregant analysis, as implemented in  QTL-seq (Takagi et al., 2013), is a powerful and efficient method for identifying agronomically important loci in crop plants. QTL-seq has been adapted from MutMap to identify quantitative trait loci. It utilizes sequences pooled from two segregating progeny populations with extreme opposite traits (e.g. resistant vs susceptible) and a single whole-genome resequencing of either of the parental cultivars.
+Bulked segregant analysis, as implemented in  QTL-seq (Takagi et al., 2013), is a powerful and efficient method for identifying agronomically important loci in crop plants. QTL-seq has been adapted from MutMap to identify quantitative trait loci. It utilizes sequences pooled from two segregating progeny populations with extreme opposite traits (e.g. resistant vs susceptible) and a single whole-genome resequencing of either of the parental cultivars. **I suggest using the parent with the trait of interest as your provided parent, to have QTL peaks and delta SNP values in the positive direction. If you use the parent without the trait of interest, you just need to understand the peaks will be upside-down.**
 
 #### Citation
 - Yu Sugihara, Lester Young, Hiroki Yaegashi, Satoshi Natsume, Daniel J. Shea, Hiroki Takagi, Helen Booker, Hideki Innan, Ryohei Terauchi, Akira Abe (2022). [High performance pipeline for MutMap and QTL-seq](https://doi.org/10.7717/peerj.13170). PeerJ, 10:e13170.
@@ -49,15 +48,8 @@ Bulked segregant analysis, as implemented in  QTL-seq (Takagi et al., 2013), is 
 - pandas
 - seaborn (optional)
 
-### Installation via bioconda
-You can install QTL-seq via [bioconda](https://bioconda.github.io/index.html).
-```
-conda create -c bioconda -n qtlseq qtlseq
-conda activate qtlseq
-```
-
 ### Manual installation
-If you encounter an error during installation, you can install QTL-seq manually.
+**My version can only be installed via this Github page!**
 ```
 git clone https://github.com/YuSugihara/QTL-seq.git
 cd QTL-seq
@@ -76,7 +68,7 @@ trimmomatic --help
 
 ## Usage
 
-If your reference genome contains more than 50 contigs, only the 50 longest contigs will be plotted.
+If your reference genome contains more than 50 contigs, only the 50 longest contigs will be plotted. 
 
 ```
 qtlseq -h
@@ -88,59 +80,70 @@ usage: qtlseq -r <FASTA> -p <BAM|FASTQ> -b1 <BAM|FASTQ>
 QTL-seq version 2.2.9
 
 options:
-  -h, --help         show this help message and exit
-  -r , --ref         Reference FASTA file.
-  -p , --parent      FASTQ or BAM file of the parent. If specifying
-                     FASTQ, separate paired-end files with a comma,
-                     e.g., -p fastq1,fastq2. This option can be
-                     used multiple times.
-  -b1 , --bulk1      FASTQ or BAM file of bulk 1. If specifying
-                     FASTQ, separate paired-end files with a comma,
-                     e.g., -b1 fastq1,fastq2. This option can be
-                     used multiple times.
-  -b2 , --bulk2      FASTQ or BAM file of bulk 2. If specifying
-                     FASTQ, separate paired-end files with a comma,
-                     e.g., -b2 fastq1,fastq2. This option can be
-                     used multiple times.
-  -n1 , --N-bulk1    Number of individuals in bulk 1.
-  -n2 , --N-bulk2    Number of individuals in bulk 2.
-  -o , --out         Output directory. The specified directory must not
-                     already exist.
-  -F , --filial      Filial generation. This parameter must be greater
-                     than 1. [2]
-  -t , --threads     Number of threads. If a value less than 1 is specified,
-                     QTL-seq will use the maximum available threads. [2]
-  -w , --window      Window size in kilobases (kb). [2000]
-  -s , --step        Step size in kilobases (kb). [100]
-  -D , --max-depth   Maximum depth of variants to be used. [250]
-  -d , --min-depth   Minimum depth of variants to be used. [8]
-  -N , --N-rep       Number of replicates for simulations to generate
-                     null distribution. [5000]
-  -T, --trim         Trim FASTQ files using Trimmomatic.
-  -a , --adapter     FASTA file containing adapter sequences. This option
-                     is used when "-T" is specified for trimming.
-  --trim-params      Parameters for Trimmomatic. Input parameters
-                     must be comma-separated in the following order:
-                     Phred score, ILLUMINACLIP, LEADING, TRAILING,
-                      SLIDINGWINDOW, MINLEN. To remove Illumina adapters,
-                     specify the adapter FASTA file with "--adapter".
-                     If not specified, adapter trimming will be skipped.
-                     [33,<ADAPTER_FASTA>:2:30:10,20,20,4:15,75]
-  -e , --snpEff      Predict causal variants using SnpEff. Check
-                     available databases in SnpEff.
-  --line-colors      Colors for threshold lines in plots. Specify a
-                     comma-separated list in the order of SNP-index,
-                     p95, and p99. ["#FE5F55,#6FD08C,#E3B505"]
-  --dot-colors       Colors for dots in plots. Specify a
-                     comma-separated list in the order of bulk1,
-                     bulk2, and delta. ["#74D3AE,#FFBE0B,#40476D"]
-  --mem              Maximum memory per thread when sorting BAM files;
-                     suffixes K/M/G are recognized. [1G]
-  -q , --min-MQ      Minimum mapping quality for mpileup. [40]
-  -Q , --min-BQ      Minimum base quality for mpileup. [18]
-  -C , --adjust-MQ   Adjust the mapping quality for mpileup. The default
-                     setting is optimized for BWA. [50]
-  -v, --version      show program's version number and exit
+  -h, --help             show this help message and exit
+  -r , --ref             Reference FASTA file.
+  **--parental_SNPfilter**   **Determines how QTL-seq handles SNP filtering and reassigning of
+                         SNPs based on the provided parent.
+                         Options:
+                         "hetero" == keeps SNPs where the parent is heterozygous (e.g. self-cross).
+                         removes homozygous SNPs. does not re-assign bulk genotypes.
+                         "homo" == keep SNPs where the parent has 0/0 or 1/1 genotype
+                         and removes sites where parent is heterozygous.
+                         this will also re-record bulk genotype assignments to be in reference
+                         to the parental genotype. For example, if bulk 1 has the same genotype as
+                         the parent, the bulk genotype for that SNP will be 0/0.
+                         THIS IS THE DEFAULT AND HOW QTL-SEQ BY SUGIHARA 2022 OPERATES. [homo]**
+  -p , --parent          FASTQ or BAM file of the parent. If specifying
+                         FASTQ, separate paired-end files with a comma,
+                         e.g., -p fastq1,fastq2. This option can be
+                         used multiple times.
+  -b1 , --bulk1          FASTQ or BAM file of bulk 1. If specifying
+                         FASTQ, separate paired-end files with a comma,
+                         e.g., -b1 fastq1,fastq2. This option can be
+                         used multiple times.
+  -b2 , --bulk2          FASTQ or BAM file of bulk 2. If specifying
+                         FASTQ, separate paired-end files with a comma,
+                         e.g., -b2 fastq1,fastq2. This option can be
+                         used multiple times.
+  -n1 , --N-bulk1        Number of individuals in bulk 1.
+  -n2 , --N-bulk2        Number of individuals in bulk 2.
+  -o , --out             Output directory. The specified directory must not
+                         already exist.
+  -F , --filial          Filial generation. This parameter must be greater
+                         than 1. [2]
+  -t , --threads         Number of threads. If a value less than 1 is specified,
+                         QTL-seq will use the maximum available threads. [2]
+  -w , --window          Window size in kilobases (kb). [2000]
+  -s , --step            Step size in kilobases (kb). [100]
+  -D , --max-depth       Maximum depth of variants to be used. [250]
+  -d , --min-depth       Minimum depth of variants to be used. [8]
+  -N , --N-rep           Number of replicates for simulations to generate
+                         null distribution. [5000]
+  -T, --trim             Trim FASTQ files using Trimmomatic.
+  -a , --adapter         FASTA file containing adapter sequences. This option
+                         is used when "-T" is specified for trimming.
+  --trim-params          Parameters for Trimmomatic. Input parameters
+                         must be comma-separated in the following order:
+                         Phred score, ILLUMINACLIP, LEADING, TRAILING,
+                         SLIDINGWINDOW, MINLEN. To remove Illumina adapters,
+                         specify the adapter FASTA file with "--adapter".
+                         If not specified, adapter trimming will be skipped.
+                         [33,<ADAPTER_FASTA>:2:30:10,20,20,4:15,75]
+  -e , --snpEff          Predict causal variants using SnpEff. Check
+                         available databases in SnpEff.
+  --line-colors          Colors for threshold lines in plots. Specify a
+                         comma-separated list in the order of SNP-index,
+                         p95, and p99. ["#FE5F55,#6FD08C,#E3B505"]
+  --dot-colors           Colors for dots in plots. Specify a
+                         comma-separated list in the order of bulk1,
+                         bulk2, and delta. ["#74D3AE,#FFBE0B,#40476D"]
+  --mem                  Maximum memory per thread when sorting BAM files;
+                         suffixes K/M/G are recognized. [1G]
+  -q , --min-MQ          Minimum mapping quality for mpileup. [40]
+  -Q , --min-BQ          Minimum base quality for mpileup. [18]
+  -C , --adjust-MQ       Adjust the mapping quality for mpileup. The default
+                         setting is optimized for BWA. [50]
+  -v, --version          show program's version number and exit
 ```
 
 QTL-seq can be run from FASTQ (without or with trimming) and BAM. If you want to run QTL-seq from VCF, please use QTL-plot (example 5). Once you run QTL-seq, QTL-seq automatically completes the subprocesses.
@@ -271,6 +274,17 @@ options:
   -n2 , --N-bulk2       Number of individuals in bulk 2.
   -o , --out            Output directory. The specified directory can already
                         exist.
+  **--parental_SNPfilter**   **Determines how QTL-seq handles SNP filtering and reassigning of
+                         SNPs based on the provided parent.
+                         Options:
+                         "hetero" == keeps SNPs where the parent is heterozygous (e.g. self-cross).
+                         removes homozygous SNPs. does not re-assign bulk genotypes.
+                         "homo" == keep SNPs where the parent has 0/0 or 1/1 genotype
+                         and removes sites where parent is heterozygous.
+                         this will also re-record bulk genotype assignments to be in reference
+                         to the parental genotype. For example, if bulk 1 has the same genotype as
+                         the parent, the bulk genotype for that SNP will be 0/0.
+                         THIS IS THE DEFAULT AND HOW QTL-SEQ BY SUGIHARA 2022 OPERATES. [homo]**
   -F , --filial         Filial generation. This parameter must be
                         greater than 1. [2]
   -t , --threads        Number of threads. If a value less than 1 is specified,
