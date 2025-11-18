@@ -29,7 +29,8 @@ class Params(object):
                                          formatter_class=argparse.RawTextHelpFormatter)
         parser.usage = ('qtlseq -r <FASTA> -p <BAM|FASTQ> -b1 <BAM|FASTQ>\n'
                         '              -b2 <BAM|FASTQ> -n1 <INT> -n2 <INT> -o <OUT_DIR>\n'
-                        '              [-F <INT>] [-T] [-e <DATABASE>]')
+                        '              --parental_SNPfilter <STR>\n'
+                        '              [-T] [-e <DATABASE>]')
 
         # set options
         parser.add_argument('-r',
@@ -39,7 +40,25 @@ class Params(object):
                             type=str,
                             help='Reference FASTA file.',
                             metavar='')
-
+        
+        parser.add_argument('--parental_SNPfilter',
+                            action='store',
+                            default='homo',
+                            choices=['hetero', 'homo'],
+                            type=str,
+                            help=("""Determines how QTL-seq handles SNP filtering and reassigning of
+                                  SNPs based on the provided parent.
+                                  Options:
+                                  "hetero" == keeps SNPs where the parent is heterozygous (e.g. self-cross).
+                                  removes homozygous SNPs. does not re-assign bulk genotypes.
+                                  "homo" == keep SNPs where the parent has 0/0 or 1/1 genotype
+                                  and removes sites where parent is heterozygous.
+                                  this will also re-record bulk genotype assignments to be in reference
+                                  to the parental genotype. For example, if bulk 1 has the same genotype as
+                                  the parent, the bulk genotype for that SNP will be 0/0.
+                                  THIS IS THE DEFAULT AND HOW QTL-SEQ BY SUGIHARA 2022 OPERATES."""),
+                            metavar='')
+        
         parser.add_argument('-p',
                             '--parent',
                             action='append',
@@ -104,7 +123,8 @@ class Params(object):
                             default=2,
                             type=int,
                             help=('Filial generation. This parameter must be greater\n'
-                                  'than 1. [2]'),
+                                  'than 1. [2] If your population is from a self-crossed heterozygote,\n' 
+                                  'input -F 2.'),
                             metavar='')
 
         parser.add_argument('-t',
@@ -193,20 +213,20 @@ class Params(object):
 
         parser.add_argument('--line-colors',
                             action='store',
-                            default='#C3310F,#009E72,#FDB003',
+                            default='red,lime,orange',
                             type=str,
                             help=('Colors for threshold lines in plots. Specify a\n'
                                   'comma-separated list in the order of SNP-index,\n'
-                                  'p95, and p99. ["#C3310F,#009E72,#FDB003"]'),
+                                  'p95, and p99. [red,lime,orange]'),
                             metavar='')
 
         parser.add_argument('--dot-colors',
                             action='store',
-                            default='#74D3AE,#FFBE0B,#B3B8DD',
+                            default='green,orange,navy',
                             type=str,
                             help=('Colors for dots in plots. Specify a\n'
                                   'comma-separated list in the order of bulk1,\n'
-                                  'bulk2, and delta. ["#74D3AE,#FFBE0B,#B3B8DD"]'),
+                                  'bulk2, and delta. [green,orange,navy]'),
                             metavar='')
 
         parser.add_argument('--mem',
@@ -254,7 +274,8 @@ class Params(object):
         parser = argparse.ArgumentParser(description='QTL-plot version {}'.format(__version__),
                                          formatter_class=argparse.RawTextHelpFormatter)
         parser.usage = ('qtlplot -v <VCF> -n1 <INT> -n2 <INT> -o <OUT_DIR>\n'
-                        '               [-F <INT>] [-t <INT>] [-w <INT>] [-s <INT>] [-D <INT>]\n'
+                        '               --parental_SNPfilter\n'
+                        '               [-t <INT>] [-w <INT>] [-s <INT>] [-D <INT>]\n'
                         '               [-d <INT>] [-N <INT>] [-m <FLOAT>] [-S <INT>] [-e <DATABASE>]\n'
                         '               [--igv] [--indel]')
 
@@ -284,6 +305,16 @@ class Params(object):
                             help='Number of individuals in bulk 2.',
                             metavar='')
 
+        parser.add_argument('-F',
+                            '--filial',
+                            action='store',
+                            default=2,
+                            type=int,
+                            help=('Filial generation. This parameter must be greater\n'
+                                  'than 1. [2] If your population is from a self-crossed heterozygote,\n' 
+                                  'input -F 2.'),
+                            metavar='')
+        
         parser.add_argument('-o',
                             '--out',
                             action='store',
@@ -293,13 +324,22 @@ class Params(object):
                                   'exist.'),
                             metavar='')
 
-        parser.add_argument('-F',
-                            '--filial',
+        parser.add_argument('--parental_SNPfilter',
                             action='store',
-                            default=2,
-                            type=int,
-                            help=('Filial generation. This parameter must be\n'
-                                  'greater than 1. [2]'),
+                            default='homo',
+                            choices=['hetero', 'homo'],
+                            type=str,
+                            help=("""Determines how QTL-seq handles SNP filtering and reassigning of
+                                  SNPs based on the provided parent.
+                                  Options:
+                                  "hetero" == keeps SNPs where the parent is heterozygous (e.g. self-cross).
+                                  removes homozygous SNPs. does not re-assign bulk genotypes.
+                                  "homo" == keep SNPs where the parent has 0/0 or 1/1 genotype
+                                  and removes sites where parent is heterozygous.
+                                  this will also re-record bulk genotype assignments to be in reference
+                                  to the parental genotype. For example, if bulk 1 has the same genotype as
+                                  the parent, the bulk genotype for that SNP will be 0/0.
+                                  THIS IS THE DEFAULT AND HOW QTL-SEQ BY SUGIHARA 2022 OPERATES."""),
                             metavar='')
 
         parser.add_argument('-t',
@@ -392,20 +432,20 @@ class Params(object):
 
         parser.add_argument('--line-colors',
                             action='store',
-                            default='#C3310F,#009E72,#FDB003',
+                            default='red,lime,orange',
                             type=str,
                             help=('Colors for threshold lines in plots. Specify a\n'
                                   'comma-separated list in the order of SNP-index,\n'
-                                  'p95, and p99. ["#C3310F,#009E72,#FDB003"]'),
+                                  'p95, and p99. [red,lime,orange]'),
                             metavar='')
 
         parser.add_argument('--dot-colors',
                             action='store',
-                            default='#74D3AE,#FFBE0B,#B3B8DD',
+                            default='green,orange,navy',
                             type=str,
                             help=('Colors for dots in plots. Specify a\n'
                                   'comma-separated list in the order of bulk1,\n'
-                                  'bulk2, and delta. ["#74D3AE,#FFBE0B,#B3B8DD"]'),
+                                  'bulk2, and delta. [green,orange,navy]'),
                             metavar='')
 
         parser.add_argument('--fig-width',
@@ -448,9 +488,9 @@ class Params(object):
 
     def check_max_threads(self, args):
         max_cpu = multi.cpu_count()
-        if max_cpu < args.threads:
+        if max_cpu <= args.threads:
             sys.stderr.write(('!!WARNING!! You can use up to {0} threads. '
-                              'The program will now use {0} threads.\n').format(max_cpu))
+                              'This program will use {0} threads.\n').format(max_cpu))
             sys.stderr.flush()
             args.threads = max_cpu
         elif args.threads < 1:
@@ -459,19 +499,30 @@ class Params(object):
 
     def check_args(self, args):
         if os.path.isdir(args.out):
-            sys.stderr.write(('  Error: Output directory already exists.\n'
-                              '  Please rename the output directory or '
-                              'remove the existing directory.\n\n'))
+            sys.stderr.write(('  Output directory already exist.\n'
+                              '  Please rename output directory or '
+                                'remove existing directory\n\n'))
             sys.exit(1)
 
         if args.filial < 2:
             sys.stderr.write('  Error: The filial generation must be greater than 1.\n')
             sys.exit(1)
 
+        if args.filial is None:
+            sys.stderr.write('!!WARNING!! The filial generation is not specified. Default [2]'
+                             ' will be used.\n')
+            sys.exit(1)
+
+        if args.parent_SNPfilter is None:
+            sys.stderr.write('!!WARNING!! parent_SNPfilter is not specified. Default ("homo")' 
+                             ' will be used.\n')
+            sys.stderr.flush()
+
         if args.adapter is not None:
             if not args.trim:
-                sys.stderr.write(('!!WARNING!! You specified "--adapter", but did not specify "--trim".\n'
-                                  '!!WARNING!! "--trim" has been automatically added.\n'))
+                sys.stderr.write(('!!WARNING!! You specified  "--adapter", but you '
+                                  'did not specify "--trim".\n'
+                                  '!!WARNING!! "--trim" was added.\n'))
                 sys.stderr.flush()
 
         if args.trim:
@@ -479,8 +530,9 @@ class Params(object):
                 args.trim_params = '33,<ADAPTER_FASTA>:2:30:10,20,20,4:15,75'
         else:
             if args.trim_params is not None:
-                sys.stderr.write(('!!WARNING!! You specified "--trim-params", but did not specify "--trim".\n'
-                                  '!!WARNING!! "--trim" has been automatically added.\n'))
+                sys.stderr.write(('!!WARNING!! You specified  "--trim-params", but you '
+                                  'did not spesify "--trim".\n'
+                                  '!!WARNING!! "--trim" was added.\n'))
                 sys.stderr.flush()
 
         N_fastq = 0
@@ -490,76 +542,91 @@ class Params(object):
             if n_comma == 0:
                 root, ext = os.path.splitext(input_name)
                 if ext != '.bam':
-                    sys.stderr.write(('  Error: Please check "{}".\n'
-                                      '  The file extension is not "bam".\n'
-                                      '  If you intended to specify FASTQ files, please provide them as paired-end reads separated by a comma. e.g., -p fastq1,fastq2\n\n').format(input_name))
+                    sys.stderr.write(('  Please check "{}".\n'
+                                      '  The extension of this file is not "bam".\n'
+                                      '  If you wanted to specify fastq, please '
+                                        'input them as paired-end reads which is separated '
+                                        'by comma. e.g. -p fastq1,fastq2\n\n').format(input_name))
                     sys.exit(1)
             elif n_comma == 1:
                 fastqs = input_name.split(',')
                 for fastq in fastqs:
                     root, ext = os.path.splitext(fastq)
                     if ext == '.bam':
-                        sys.stderr.write(('  Error: Please check "{}".\n'
-                                          '  The file extension should not be "bam".\n'
-                                          '  If you intended to specify BAM files, please input them separately. e.g., -p bam1 -p bam2\n\n').format(input_name))
+                        sys.stderr.write(('  Please check "{}".\n'
+                                          '  The extension must not be "bam".\n'
+                                          '  If you wanted to specify bam, please '
+                                            'input them separately. e.g. -p bam1 '
+                                            '-p bam2\n\n').format(input_name))
                         sys.exit(1)
                 N_fastq += 1
             else:
-                sys.stderr.write(('  Error: Please check "{}".\n'
-                                  '  You have specified too many files, or the file name contains a comma.\n\n').format(input_name))
+                sys.stderr.write(('  Please check "{}".\n'
+                                  '  You specified too much files, or '
+                                    'your file name includes ",".\n\n').format(input_name))
                 sys.exit(1)
 
-        for input_name in args.bulk1:
+        for input_name in  args.bulk1:
             n_comma = input_name.count(',')
             if n_comma == 0:
                 root, ext = os.path.splitext(input_name)
                 if ext != '.bam':
-                    sys.stderr.write(('  Error: Please check "{}".\n'
-                                      '  The file extension is not "bam".\n'
-                                      '  If you intended to specify FASTQ files, please provide them as paired-end reads separated by a comma. e.g., -b1 fastq1,fastq2\n\n').format(input_name))
+                    sys.stderr.write(('  Please check "{}".\n'
+                                      '  The extension of this file is not "bam".\n'
+                                      '  If you wanted to specify fastq, please '
+                                        'input them as paired-end reads which is separated '
+                                        'by comma. e.g. -b1 fastq1,fastq2\n\n').format(input_name))
                     sys.exit(1)
             elif n_comma == 1:
                 fastqs = input_name.split(',')
                 for fastq in fastqs:
                     root, ext = os.path.splitext(fastq)
                     if ext == '.bam':
-                        sys.stderr.write(('  Error: Please check "{}".\n'
-                                          '  The file extension should not be "bam".\n'
-                                          '  If you intended to specify BAM files, please input them separately. e.g., -b1 bam1 -b1 bam2\n\n').format(input_name))
+                        sys.stderr.write(('  Please check "{}".\n'
+                                          '  The extension must not be "bam".\n'
+                                          '  If you wanted to specify bam, please '
+                                            'input them separately. e.g. -b1 bam1 '
+                                            '-b1 bam2\n\n').format(input_name))
                         sys.exit(1)
                 N_fastq += 1
             else:
-                sys.stderr.write(('  Error: Please check "{}".\n'
-                                  '  You have specified too many files, or the file name contains a comma.\n\n').format(input_name))
+                sys.stderr.write(('  Please check "{}".\n'
+                                  '  You specified too much files, or '
+                                    'your file name includes ",".\n\n').format(input_name))
                 sys.exit(1)
 
-        for input_name in args.bulk2:
+        for input_name in  args.bulk2:
             n_comma = input_name.count(',')
             if n_comma == 0:
                 root, ext = os.path.splitext(input_name)
                 if ext != '.bam':
-                    sys.stderr.write(('  Error: Please check "{}".\n'
-                                      '  The file extension is not "bam".\n'
-                                      '  If you intended to specify FASTQ files, please provide them as paired-end reads separated by a comma. e.g., -b2 fastq1,fastq2\n\n').format(input_name))
+                    sys.stderr.write(('  Please check "{}".\n'
+                                      '  The extension of this file is not "bam".\n'
+                                      '  If you wanted to specify fastq, please '
+                                        'input them as paired-end reads which is separated '
+                                        'by comma. e.g. -b2 fastq1,fastq2\n\n').format(input_name))
                     sys.exit(1)
             elif n_comma == 1:
                 fastqs = input_name.split(',')
                 for fastq in fastqs:
                     root, ext = os.path.splitext(fastq)
                     if ext == '.bam':
-                        sys.stderr.write(('  Error: Please check "{}".\n'
-                                          '  The file extension should not be "bam".\n'
-                                          '  If you intended to specify BAM files, please input them separately. e.g., -b2 bam1 -b2 bam2\n\n').format(input_name))
+                        sys.stderr.write(('  Please check "{}".\n'
+                                          '  The extension must not be "bam".\n'
+                                          '  If you wanted to specify bam, please '
+                                            'input them separately. e.g. -b2 bam1 '
+                                            '-b2 bam2\n\n').format(input_name))
                         sys.exit(1)
                 N_fastq += 1
             else:
-                sys.stderr.write(('  Error: Please check "{}".\n'
-                                  '  You have specified too many files, or the file name contains a comma.\n\n').format(input_name))
+                sys.stderr.write(('  Please check "{}".\n'
+                                  '  You specified too much files, or '
+                                    'your file name includes ",".\n\n').format(input_name))
                 sys.exit(1)
 
         if N_fastq == 0 and args.trim:
-            sys.stderr.write(('  Error: "--trim" can only be used when FASTQ files are specified.\n\n'))
+            sys.stderr.write(('  You can specify "--trim" only when '
+                                 'you input fastq.\n\n'))
             sys.exit(1)
 
         return N_fastq
-
