@@ -51,7 +51,7 @@ Bulked segregant analysis, as implemented in  QTL-seq (Takagi et al., 2013), is 
 ### Manual installation
 **My version can only be installed via this Github page!**
 ```
-git clone https://github.com/YuSugihara/QTL-seq.git
+git clone https://github.com/bu20dy/QTL-seq.git
 cd QTL-seq
 pip install -e .
 ```
@@ -82,7 +82,7 @@ QTL-seq version 2.2.9
 options:
   -h, --help             show this help message and exit
   -r , --ref             Reference FASTA file.
-  **--parental_SNPfilter**   **Determines how QTL-seq handles SNP filtering and reassigning of
+  --parental_SNPfilter   Determines how QTL-seq handles SNP filtering and reassigning of
                          SNPs based on the provided parent.
                          Options:
                          "hetero" == keeps SNPs where the parent is heterozygous (e.g. self-cross).
@@ -92,7 +92,7 @@ options:
                          this will also re-record bulk genotype assignments to be in reference
                          to the parental genotype. For example, if bulk 1 has the same genotype as
                          the parent, the bulk genotype for that SNP will be 0/0.
-                         THIS IS THE DEFAULT AND HOW QTL-SEQ BY SUGIHARA 2022 OPERATES. [homo]**
+                         THIS IS THE DEFAULT AND HOW QTL-SEQ BY SUGIHARA 2022 OPERATES. [homo]
   -p , --parent          FASTQ or BAM file of the parent. If specifying
                          FASTQ, separate paired-end files with a comma,
                          e.g., -p fastq1,fastq2. This option can be
@@ -267,57 +267,57 @@ usage: qtlplot -v <VCF> -n1 <INT> -n2 <INT> -o <OUT_DIR>
 QTL-plot version 2.2.9
 
 options:
-  -h, --help            show this help message and exit
-  -v , --vcf            VCF file which contains parent, bulk1, and bulk2
-                        in this order. This VCF file must have AD field.
-  -n1 , --N-bulk1       Number of individuals in bulk 1.
-  -n2 , --N-bulk2       Number of individuals in bulk 2.
-  -o , --out            Output directory. The specified directory can already
-                        exist.
-  **--parental_SNPfilter**   **Determines how QTL-seq handles SNP filtering and reassigning of
-                         SNPs based on the provided parent.
-                         Options:
-                         "hetero" == keeps SNPs where the parent is heterozygous (e.g. self-cross).
-                         removes homozygous SNPs. does not re-assign bulk genotypes.
-                         "homo" == keep SNPs where the parent has 0/0 or 1/1 genotype
-                         and removes sites where parent is heterozygous.
-                         this will also re-record bulk genotype assignments to be in reference
-                         to the parental genotype. For example, if bulk 1 has the same genotype as
-                         the parent, the bulk genotype for that SNP will be 0/0.
-                         THIS IS THE DEFAULT AND HOW QTL-SEQ BY SUGIHARA 2022 OPERATES. [homo]**
-  -F , --filial         Filial generation. This parameter must be
-                        greater than 1. [2]
-  -t , --threads        Number of threads. If a value less than 1 is specified,
-                        QTL-seq will use the maximum available threads. [2]
-  -w , --window         Window size (kb). [2000]
-  -s , --step           Step size (kb). [100]
-  -D , --max-depth      Maximum depth of variants to be used. [250]
-  -d , --min-depth      Minimum depth of variants to be used. [8]
-  -N , --N-rep          Number of replicates for simulations to generate
-                        null distribution. [5000]
-  -m , --min-SNPindex   Cutoff of minimum SNP-index for clear results. [0.3]
-  -S , --strand-bias    Filter out spurious homozygous genotypes in the cultivar
-                        based on strand bias. If ADF (or ADR) is higher than
-                        this cutoff when ADR (or ADF) is 0, that SNP will be
-                        filtered out. If you want to disable this filtering,
-                        set this cutoff to 0. [7]
-  -e , --snpEff         Predict causal variants using SnpEff. Check
-                        available databases in SnpEff.
-  --igv                 Output IGV format file to check results on IGV.
-  --indel               Plot SNP-index with INDEL.
-  --line-colors         Colors for threshold lines in plots. Specify a
-                        comma-separated list in the order of SNP-index,
-                        p95, and p99. ["#C3310F,#009E72,#FDB003"]
-  --dot-colors          Colors for dots in plots. Specify a
-                        comma-separated list in the order of bulk1,
-                        bulk2, and delta. ["#74D3AE,#FFBE0B,#B3B8DD"]
-  --fig-width           Width allocated in chromosome figure. [7.5]
-  --fig-height          Height allocated in chromosome figure. [4.0]
-  --white-space         White space between figures. (This option
-                        only affects vertical direction.) [0.6]
-  -f , --format         Specify the format of an output image.
-                        eps/jpeg/jpg/pdf/pgf/png/rgba/svg/svgz/tif/tiff
-  --version             show program's version number and exit
+  -h, --help              show this help message and exit
+  -v , --vcf              VCF file which contains parent, bulk1, and bulk2
+                          in this order. This VCF file must have AD field.
+  -n1 , --N-bulk1         Number of individuals in bulk 1.
+  -n2 , --N-bulk2         Number of individuals in bulk 2.
+  -o , --out              Output directory. The specified directory can already
+                          exist.
+  --parental_SNPfilter    Determines how QTL-seq handles SNP filtering and reassigning of
+                          SNPs based on the provided parent.
+                          Options:
+                          "hetero" == keeps SNPs where the parent is heterozygous (e.g. self-cross).
+                          removes homozygous SNPs. does not re-assign bulk genotypes.
+                          "homo" == keep SNPs where the parent has 0/0 or 1/1 genotype
+                          and removes sites where parent is heterozygous.
+                          this will also re-record bulk genotype assignments to be in reference
+                          to the parental genotype. For example, if bulk 1 has the same genotype as
+                          the parent, the bulk genotype for that SNP will be 0/0.
+                          THIS IS THE DEFAULT AND HOW QTL-SEQ BY SUGIHARA 2022 OPERATES. [homo]
+  -F , --filial           Filial generation. This parameter must be
+                          greater than 1. [2]
+  -t , --threads          Number of threads. If a value less than 1 is specified,
+                          QTL-seq will use the maximum available threads. [2]
+  -w , --window           Window size (kb). [2000]
+  -s , --step             Step size (kb). [100]
+  -D , --max-depth        Maximum depth of variants to be used. [250]
+  -d , --min-depth        Minimum depth of variants to be used. [8]
+  -N , --N-rep            Number of replicates for simulations to generate
+                          null distribution. [5000]
+  -m , --min-SNPindex     Cutoff of minimum SNP-index for clear results. [0.3]
+  -S , --strand-bias      Filter out spurious homozygous genotypes in the cultivar
+                          based on strand bias. If ADF (or ADR) is higher than
+                          this cutoff when ADR (or ADF) is 0, that SNP will be
+                          filtered out. If you want to disable this filtering,
+                          set this cutoff to 0. [7]
+  -e , --snpEff           Predict causal variants using SnpEff. Check
+                          available databases in SnpEff.
+  --igv                   Output IGV format file to check results on IGV.
+  --indel                 Plot SNP-index with INDEL.
+  --line-colors           Colors for threshold lines in plots. Specify a
+                          comma-separated list in the order of SNP-index,
+                          p95, and p99. ["#C3310F,#009E72,#FDB003"]
+  --dot-colors            Colors for dots in plots. Specify a
+                          comma-separated list in the order of bulk1,
+                          bulk2, and delta. ["#74D3AE,#FFBE0B,#B3B8DD"]
+  --fig-width             Width allocated in chromosome figure. [7.5]
+  --fig-height            Height allocated in chromosome figure. [4.0]
+  --white-space           White space between figures. (This option
+                          only affects vertical direction.) [0.6]
+  -f , --format           Specify the format of an output image.
+                          eps/jpeg/jpg/pdf/pgf/png/rgba/svg/svgz/tif/tiff
+  --version               show program's version number and exit
 ```
 QTL-plot is included in QTL-seq. QTL-seq run QTL-plot after making VCF. Then, QTL-plot will work with default parameters. If you want to change some parameters, you can use VCF inside of `(OUT_DIR/30_vcf/QTL-seq.vcf.gz)` to retry plotting process like below.
 
